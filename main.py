@@ -161,7 +161,7 @@ def handle_like(update: Update, context: CallbackContext):
     show_profile(update, context)
 
 def main():
-    TOKEN = os.environ.get("8050439240:AAHDA8GsK2LQ7z1_Eyj26av7E-0JF6cgf84")
+    TOKEN = os.environ.get("TOKEN")
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
 
