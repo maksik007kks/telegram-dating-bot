@@ -177,5 +177,21 @@ def main():
     print("Бот запущен!")
     updater.idle()
 
-if __name__ == '__main__':
-    main()
+def run_bot():
+    TOKEN = os.environ.get("TOKEN")
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    # 👇 добавь все свои хендлеры
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("stop", stop))
+    dp.add_handler(CommandHandler("profile", profile))
+    dp.add_handler(CommandHandler("match", show_profile))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dp.add_handler(MessageHandler(Filters.photo, handle_photo))
+
+    updater.start_polling()
+    print("Бот запущен!")
+    updater.idle()
+
