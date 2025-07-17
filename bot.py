@@ -90,7 +90,7 @@ def handle_message(update: Update, context: CallbackContext):
         update.message.reply_text("Расскажи немного о себе:", reply_markup=ReplyKeyboardRemove())
 
     elif state == 'bio':
-        cursor.execute("UPDATE users SET bio = ?, state = 'browse' WHERE user_id = ?", (text, user_id))
+        cursor.execute("UPDATE users SET bio = ?, state = 'photo' WHERE user_id = ?", (text, user_id))
         update.message.reply_text("Отправь фотографию профиля.")
 
     elif state == 'browse':
@@ -107,8 +107,8 @@ def handle_photo(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     cursor.execute("SELECT state FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
-    if row and row[0] == 'browse':
-        update.message.reply_text("Фото уже есть.")
+    if not row or row[0] != 'photo':
+        update.message.reply_text("Сейчас не время для фото.")
         return
 
     photo = update.message.photo[-1]
@@ -138,10 +138,10 @@ def show_profile(update: Update, context: CallbackContext):
         caption = f"Имя: {name}\nВозраст: {age}\nО себе: {bio}"
         if photo and os.path.exists(photo):
             update.message.reply_photo(photo=open(photo, 'rb'), caption=caption,
-                                       reply_markup=ReplyKeyboardMarkup([['Лайк', 'Дальше']], resize_keyboard=True))
+                                       reply_markup=ReplyKeyboardMarkup([["Лайк", "Дальше"]], resize_keyboard=True))
         else:
             update.message.reply_text(caption,
-                                      reply_markup=ReplyKeyboardMarkup([['Лайк', 'Дальше']], resize_keyboard=True))
+                                      reply_markup=ReplyKeyboardMarkup([["Лайк", "Дальше"]], resize_keyboard=True))
         return
 
     update.message.reply_text("Анкеты закончились 🥲")
@@ -156,26 +156,10 @@ def handle_like(update: Update, context: CallbackContext):
     cursor.execute("INSERT OR IGNORE INTO likes (liker_id, liked_id) VALUES (?, ?)", (user_id, target_id))
     cursor.execute("SELECT 1 FROM likes WHERE liker_id = ? AND liked_id = ?", (target_id, user_id))
     if cursor.fetchone():
-        update.message.reply_text("💖 Это взаимно! Напишите друг другу в Telegram!")
+        update.message.reply_text("\U0001F496 Это взаимно! Напишите друг другу в Telegram!")
     conn.commit()
     show_profile(update, context)
 
-def main():
-    TOKEN = os.environ.get("TOKEN")
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
-
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("stop", stop))
-    dp.add_handler(CommandHandler("profile", profile))
-    dp.add_handler(CommandHandler("match", show_profile))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-    dp.add_handler(MessageHandler(Filters.photo, handle_photo))
-
-    updater.start_polling()
-    print("Бот запущен!")
-    updater.idle()
 
 def run_bot():
     TOKEN = os.environ.get("TOKEN")
