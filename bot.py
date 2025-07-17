@@ -160,22 +160,15 @@ def handle_like(update: Update, context: CallbackContext):
     conn.commit()
     show_profile(update, context)
 
-
 def run_bot():
     TOKEN = os.environ.get("TOKEN")
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    # 👇 добавь все свои хендлеры
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("stop", stop))
-    dp.add_handler(CommandHandler("profile", profile))
-    dp.add_handler(CommandHandler("match", show_profile))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-    dp.add_handler(MessageHandler(Filters.photo, handle_photo))
-
+    # handlers ...
     updater.start_polling()
     print("Бот запущен!")
-    updater.idle()
+
+    updater.idle()  # ОСТАВЬ ТАК — но вызови из __main__
+
 
